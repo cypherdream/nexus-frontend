@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Market - Premium Storefront</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b',
+                        accentNeon: '#0ea5e9'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-slate-100 font-sans min-h-screen">
+
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <a href="#" class="text-2xl font-black tracking-wider text-accentNeon">NEXUS MARKET</a>
+            
+            <nav class="flex gap-6 text-sm font-bold uppercase tracking-widest">
+                <a href="#clothes" class="hover:text-accentNeon transition-colors border-b-2 border-transparent hover:border-accentNeon pb-1">👕 Clothes</a>
+                <a href="#shoes" class="hover:text-accentNeon transition-colors border-b-2 border-transparent hover:border-accentNeon pb-1">👟 Shoes</a>
+            </nav>
+            
+            <div class="text-sm text-slate-400">Cart (0)</div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-12">
+
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button onclick="filterCategory('male')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👨 Male</button>
+            <button onclick="filterCategory('female')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👩 Female</button>
+            <button onclick="filterCategory('boys')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👦 Boys</button>
+            <button onclick="filterCategory('girls')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👧 Girls</button>
+        </section>
+
+        <section>
+            <h2 id="section-title" class="text-2xl font-extrabold tracking-tight mb-6 border-l-4 border-accentNeon pl-3">Trending Products</h2>
+            
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
+        <p>&copy; 2026 Nexus Market API Integration. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Sample dataset containing all required classifications
+        const catalog = [
+            { id: 1, name: "Premium Tailored Suit", price: "KSh 12,500", type: "clothes", target: "male", img: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400" },
+            { id: 2, name: "Air Stream Runners", price: "KSh 6,200", type: "shoes", target: "male", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" },
+            { id: 3, name: "Designer Evening Gown", price: "KSh 15,000", type: "clothes", target: "female", img: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400" },
+            { id: 4, name: "Classic Urban Heels", price: "KSh 7,500", type: "shoes", target: "female", img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400" },
+            { id: 5, name: "Kids Active Tracksuit", price: "KSh 3,800", type: "clothes", target: "boys", img: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=400" },
+            { id: 6, name: "Junior Flex Skate Shoes", price: "KSh 4,200", type: "shoes", target: "boys", img: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=400" },
+            { id: 7, name: "Floral Summer Dress", price: "KSh 3,500", type: "clothes", target: "girls", img: "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=400" },
+            { id: 8, name: "Glitter Sparkle Sneakers", price: "KSh 3,900", type: "shoes", target: "girls", img: "https://images.unsplash.com/photo-1515347619252-60a4bf4eff4c?w=400" }
+        ];
+
+        function renderProducts(products) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            
+            products.forEach(item => {
+                grid.innerHTML += `
+                    <div class="bg-cardBg rounded-2xl overflow-hidden border border-slate-800 shadow-md flex flex-col justify-between group hover:border-slate-700 transition-all duration-200">
+                        <div class="relative pt-[100%] bg-slate-800 overflow-hidden">
+                            <img src="${item.img}" alt="${item.name}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <span class="absolute top-3 left-3 bg-slate-900/80 text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-md border border-slate-700 text-accentNeon">${item.target} | ${item.type}</span>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <h3 class="font-bold tracking-tight text-slate-200 text-base leading-tight">${item.name}</h3>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-lg font-black text-slate-100">${item.price}</span>
+                                <button onclick="triggerCheckout(${item.id})" class="bg-accentNeon hover:bg-sky-500 text-slate-950 font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-lg transition-colors shadow-lg shadow-sky-500/10">Checkout</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterCategory(category) {
+            document.getElementById('section-title').innerText = `${category.charAt(0).toUpperCase() + category.slice(1)} Selection`;
+            const filtered = catalog.filter(item => item.target === category);
+            renderProducts(filtered);
+        }
+
+        // Upper Navigation Event Listeners
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.replace('#', '');
+            if(hash === 'clothes' || hash === 'shoes') {
+                document.getElementById('section-title').innerText = `Trending ${hash.charAt(0).toUpperCase() + hash.slice(1)}`;
+                const filtered = catalog.filter(item => item.type === hash);
+                renderProducts(filtered);
+            }
+        });
+
+        // Mock hook to your custom Checkout API 
+        function triggerCheckout(id) {
+            const item = catalog.find(p => p.id === id);
+            alert(`Connecting to nexus-checkout-api to process order for: ${item.name}`);
+            // Future integration: fetch('http://127.0.0.1:8000/api/checkout', { method: 'POST', ... })
+        }
+
+        // Initial Load
+        renderProducts(catalog);
+    </script>
+</body>
+</html>
