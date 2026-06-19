@@ -1,122 +1,418 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Market - Premium Storefront</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#0f172a',
-                        cardBg: '#1e293b',
-                        accentNeon: '#0ea5e9'
-                    }
-                }
-            }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus Market</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#11131A',
+          panel: '#1B1E27',
+          line: '#2B2F3B',
+          paper: '#F4F1EA',
+          signal: '#FF5A1F',
+          mute: '#8B8F9C'
+        },
+        fontFamily: {
+          display: ['"Archivo Black"', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
         }
-    </script>
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .skeleton {
+    background: linear-gradient(90deg, #1B1E27 25%, #232734 37%, #1B1E27 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+  .cart-badge { transition: transform 0.2s ease; }
+  .cart-bump { transform: scale(1.3); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #2B2F3B; border-radius: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
 </head>
-<body class="bg-darkBg text-slate-100 font-sans min-h-screen">
+<body class="bg-ink text-paper antialiased min-h-screen">
 
-    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <a href="#" class="text-2xl font-black tracking-wider text-accentNeon">NEXUS MARKET</a>
-            
-            <nav class="flex gap-6 text-sm font-bold uppercase tracking-widest">
-                <a href="#clothes" class="hover:text-accentNeon transition-colors border-b-2 border-transparent hover:border-accentNeon pb-1">👕 Clothes</a>
-                <a href="#shoes" class="hover:text-accentNeon transition-colors border-b-2 border-transparent hover:border-accentNeon pb-1">👟 Shoes</a>
-            </nav>
-            
-            <div class="text-sm text-slate-400">Cart (0)</div>
+  <!-- ===== HEADER ===== -->
+  <header class="sticky top-0 z-40 bg-ink/95 backdrop-blur border-b border-line">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+      <a href="#" class="font-display text-lg sm:text-xl tracking-tight text-paper shrink-0">
+        NEXUS<span class="text-signal">.</span>
+      </a>
+
+      <div class="hidden sm:flex items-center gap-1 bg-panel border border-line rounded-full px-1 py-1 text-sm font-medium">
+        <button data-cat="all" class="cat-btn px-4 py-1.5 rounded-full transition-colors text-paper bg-signal">All</button>
+        <button data-cat="clothes" class="cat-btn px-4 py-1.5 rounded-full transition-colors text-mute hover:text-paper">Clothes</button>
+        <button data-cat="shoes" class="cat-btn px-4 py-1.5 rounded-full transition-colors text-mute hover:text-paper">Shoes</button>
+      </div>
+
+      <button onclick="openCart()" class="relative flex items-center gap-2 bg-panel border border-line hover:border-signal/50 rounded-full px-4 py-2 transition-colors shrink-0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+        <span class="text-sm font-semibold hidden sm:inline">Cart</span>
+        <span id="cart-count" class="cart-badge bg-signal text-ink text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">0</span>
+      </button>
+    </div>
+
+    <!-- mobile category row -->
+    <div class="sm:hidden flex gap-2 px-4 pb-3 overflow-x-auto">
+      <button data-cat="all" class="cat-btn-m px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors text-ink bg-signal">All</button>
+      <button data-cat="clothes" class="cat-btn-m px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors text-mute bg-panel border border-line">Clothes</button>
+      <button data-cat="shoes" class="cat-btn-m px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors text-mute bg-panel border border-line">Shoes</button>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-6">
+    <p class="font-mono text-xs text-signal uppercase tracking-widest mb-2">New drops daily</p>
+    <h1 class="font-display text-3xl sm:text-5xl leading-[1.05] tracking-tight max-w-xl">
+      PICK IT. CART IT.<br>WHATSAPP US.
+    </h1>
+    <p class="text-mute mt-3 max-w-md text-sm sm:text-base">No accounts, no checkout forms. Build your order, hit send, and we'll confirm it on chat.</p>
+  </section>
+
+  <!-- ===== STATUS BANNER (shown on backend error) ===== -->
+  <div id="status-banner" class="hidden max-w-6xl mx-auto px-4 sm:px-6 mb-4">
+    <div class="bg-panel border border-signal/30 rounded-xl px-4 py-3 text-sm text-mute">
+      <span class="text-paper font-semibold">Couldn't load live stock.</span>
+      <span id="status-detail">Retrying…</span>
+    </div>
+  </div>
+
+  <!-- ===== PRODUCT GRID ===== -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pb-24">
+    <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"></div>
+    <div id="empty-state" class="hidden flex-col items-center text-center py-20">
+      <p class="font-display text-xl text-mute mb-2">NOTHING HERE YET</p>
+      <p class="text-mute text-sm">Check back soon, we restock fast.</p>
+    </div>
+  </main>
+
+  <!-- ===== CART DRAWER ===== -->
+  <div id="cart-overlay" onclick="closeCart()" class="hidden fixed inset-0 bg-black/60 z-50 transition-opacity"></div>
+  <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-panel border-l border-line z-50 translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-line">
+      <h2 class="font-display text-lg">YOUR CART</h2>
+      <button onclick="closeCart()" class="text-mute hover:text-paper text-2xl leading-none">&times;</button>
+    </div>
+
+    <div id="cart-items" class="flex-1 overflow-y-auto px-5 py-4 space-y-4"></div>
+
+    <div id="cart-empty" class="hidden flex-1 flex flex-col items-center justify-center text-center px-5">
+      <p class="font-display text-base text-mute">CART'S EMPTY</p>
+      <p class="text-mute text-sm mt-1">Add something you like.</p>
+    </div>
+
+    <div id="cart-footer" class="border-t border-line px-5 py-4 space-y-3">
+      <div class="flex justify-between items-baseline">
+        <span class="text-mute text-sm">Total</span>
+        <span id="cart-total" class="font-display text-2xl text-signal">KSh 0</span>
+      </div>
+      <button onclick="checkoutWhatsApp()" class="w-full bg-signal hover:bg-orange-500 text-ink font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-1.4-.6-2.5-1.5-3.4-2.9-.1-.2-.1-.4.1-.5.2-.2.4-.5.6-.7.1-.2.1-.4 0-.6-.1-.2-.6-1.5-.8-2-.1-.4-.3-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 1-1 2.3 0 1.4 1 2.7 1.1 2.9.1.2 1.8 2.8 4.4 3.8 2.1.8 2.8.6 3.3.5.6-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.1-1.2-.1-.1-.3-.2-.6-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.9-1.3C8.4 21.5 10.1 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.2c-1.6 0-3.2-.4-4.5-1.2l-.3-.2-3.4.9.9-3.3-.2-.3C3.6 14.7 3.2 13.4 3.2 12 3.2 7.1 7.1 3.2 12 3.2S20.8 7.1 20.8 12 16.9 20.2 12 20.2z"/></svg>
+        Send order on WhatsApp
+      </button>
+      <p class="text-mute text-xs text-center">Opens WhatsApp with your order ready to send</p>
+    </div>
+  </aside>
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-paper text-ink font-semibold text-sm px-5 py-3 rounded-full shadow-2xl z-[60] transition-all"></div>
+
+  <footer class="border-t border-line py-8 text-center text-xs text-mute font-mono">
+    NEXUS MARKET — © 2026
+  </footer>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API_BASE = "https://nexus-checkout-api.onrender.com"; // <-- update to your real Render URL if different
+const WHATSAPP_NUMBER = "254769485902"; // matches backend my_number
+
+// ============================================================
+// STATE
+// ============================================================
+let allProducts = [];
+let activeCategory = "all";
+let cart = {}; // { product_id: { product, quantity } }
+
+// ============================================================
+// FETCH PRODUCTS FROM BACKEND
+// ============================================================
+async function loadProducts() {
+  showSkeletons();
+  try {
+    const res = await fetch(`${API_BASE}/products?limit=50`);
+    if (!res.ok) throw new Error(`Server responded ${res.status}`);
+    const data = await res.json();
+    allProducts = Array.isArray(data) ? data : [];
+    hideStatusBanner();
+    renderProducts();
+  } catch (err) {
+    console.error("Failed to load products:", err);
+    showStatusBanner(err.message);
+    allProducts = [];
+    renderProducts();
+  }
+}
+
+function showStatusBanner(msg) {
+  document.getElementById('status-banner').classList.remove('hidden');
+  document.getElementById('status-detail').textContent = `We'll keep trying. (${msg})`;
+}
+function hideStatusBanner() {
+  document.getElementById('status-banner').classList.add('hidden');
+}
+
+function showSkeletons() {
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = Array.from({length: 8}).map(() => `
+    <div class="rounded-2xl overflow-hidden border border-line">
+      <div class="skeleton aspect-square"></div>
+      <div class="p-3 space-y-2 bg-panel">
+        <div class="skeleton h-3 w-3/4 rounded"></div>
+        <div class="skeleton h-3 w-1/2 rounded"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER PRODUCTS
+// ============================================================
+function getImage(product) {
+  if (product.product_images && product.product_images.length > 0) {
+    return product.product_images[0].product_image;
+  }
+  return `https://placehold.co/500x500/1B1E27/8B8F9C?text=${encodeURIComponent(product.product_name || 'Nexus')}`;
+}
+
+function getCategorySlug(product) {
+  const name = (product.category && product.category.category_name) || product.category || '';
+  return String(name).toLowerCase();
+}
+
+function formatKsh(amount) {
+  const n = Number(amount) || 0;
+  return `KSh ${n.toLocaleString('en-KE')}`;
+}
+
+function renderProducts() {
+  const grid = document.getElementById('product-grid');
+  const emptyState = document.getElementById('empty-state');
+
+  let visible = allProducts;
+  if (activeCategory !== 'all') {
+    visible = allProducts.filter(p => getCategorySlug(p).includes(activeCategory));
+  }
+
+  if (visible.length === 0) {
+    grid.innerHTML = '';
+    emptyState.classList.remove('hidden');
+    emptyState.classList.add('flex');
+    return;
+  }
+  emptyState.classList.add('hidden');
+  emptyState.classList.remove('flex');
+
+  grid.innerHTML = visible.map(p => {
+    const outOfStock = (p.stock ?? 0) <= 0;
+    return `
+    <div class="group rounded-2xl overflow-hidden border border-line bg-panel hover:border-signal/40 transition-colors flex flex-col">
+      <div class="relative aspect-square bg-ink overflow-hidden">
+        <img src="${getImage(p)}" alt="${escapeHtml(p.product_name)}" loading="lazy"
+             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+             onerror="this.src='https://placehold.co/500x500/1B1E27/8B8F9C?text=Nexus'">
+        ${outOfStock ? '<span class="absolute top-2 left-2 bg-ink/90 text-mute text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-md border border-line">Sold out</span>' : ''}
+      </div>
+      <div class="p-3 flex flex-col gap-2 flex-1">
+        <h3 class="text-sm font-semibold leading-snug line-clamp-2">${escapeHtml(p.product_name)}</h3>
+        <div class="flex items-center justify-between mt-auto pt-1">
+          <span class="font-display text-sm text-signal">${formatKsh(p.price)}</span>
+          <button
+            onclick="addToCart(${p.id})"
+            ${outOfStock ? 'disabled' : ''}
+            class="${outOfStock ? 'bg-line text-mute cursor-not-allowed' : 'bg-paper text-ink hover:bg-signal'} text-xs font-bold uppercase tracking-wide px-3 py-2 rounded-lg transition-colors">
+            ${outOfStock ? 'Out' : 'Add'}
+          </button>
         </div>
-    </header>
+      </div>
+    </div>
+  `}).join('');
+}
 
-    <main class="max-w-7xl mx-auto px-4 py-8 space-y-12">
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
 
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button onclick="filterCategory('male')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👨 Male</button>
-            <button onclick="filterCategory('female')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👩 Female</button>
-            <button onclick="filterCategory('boys')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👦 Boys</button>
-            <button onclick="filterCategory('girls')" class="bg-cardBg hover:bg-slate-800 border border-slate-700 p-4 rounded-xl text-center font-bold tracking-wide transition-all duration-200 shadow-md">👧 Girls</button>
-        </section>
+// ============================================================
+// CATEGORY FILTER
+// ============================================================
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-btn, .cat-btn-m').forEach(btn => {
+    const isActive = btn.dataset.cat === cat;
+    btn.classList.toggle('bg-signal', isActive);
+    btn.classList.toggle('text-ink', isActive && btn.classList.contains('cat-btn-m'));
+    btn.classList.toggle('text-paper', isActive && btn.classList.contains('cat-btn'));
+    btn.classList.toggle('text-mute', !isActive);
+    if (btn.classList.contains('cat-btn-m')) {
+      btn.classList.toggle('bg-panel', !isActive);
+      btn.classList.toggle('border', !isActive);
+      btn.classList.toggle('border-line', !isActive);
+    }
+  });
+  renderProducts();
+}
+document.querySelectorAll('.cat-btn, .cat-btn-m').forEach(btn => {
+  btn.addEventListener('click', () => setCategory(btn.dataset.cat));
+});
 
-        <section>
-            <h2 id="section-title" class="text-2xl font-extrabold tracking-tight mb-6 border-l-4 border-accentNeon pl-3">Trending Products</h2>
-            
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                </div>
-        </section>
+// ============================================================
+// CART LOGIC (client-side, no login required)
+// ============================================================
+function addToCart(productId) {
+  const product = allProducts.find(p => p.id === productId);
+  if (!product) return;
 
-    </main>
+  if (!cart[productId]) {
+    cart[productId] = { product, quantity: 1 };
+  } else {
+    cart[productId].quantity += 1;
+  }
+  updateCartUI();
+  bumpCartBadge();
+  showToast(`Added ${product.product_name}`);
+}
 
-    <footer class="bg-slate-900 border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
-        <p>&copy; 2026 Nexus Market API Integration. All rights reserved.</p>
-    </footer>
+function changeQuantity(productId, delta) {
+  if (!cart[productId]) return;
+  cart[productId].quantity += delta;
+  if (cart[productId].quantity <= 0) {
+    delete cart[productId];
+  }
+  updateCartUI();
+}
 
-    <script>
-        // Sample dataset containing all required classifications
-        const catalog = [
-            { id: 1, name: "Premium Tailored Suit", price: "KSh 12,500", type: "clothes", target: "male", img: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400" },
-            { id: 2, name: "Air Stream Runners", price: "KSh 6,200", type: "shoes", target: "male", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" },
-            { id: 3, name: "Designer Evening Gown", price: "KSh 15,000", type: "clothes", target: "female", img: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400" },
-            { id: 4, name: "Classic Urban Heels", price: "KSh 7,500", type: "shoes", target: "female", img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400" },
-            { id: 5, name: "Kids Active Tracksuit", price: "KSh 3,800", type: "clothes", target: "boys", img: "https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=400" },
-            { id: 6, name: "Junior Flex Skate Shoes", price: "KSh 4,200", type: "shoes", target: "boys", img: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=400" },
-            { id: 7, name: "Floral Summer Dress", price: "KSh 3,500", type: "clothes", target: "girls", img: "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=400" },
-            { id: 8, name: "Glitter Sparkle Sneakers", price: "KSh 3,900", type: "shoes", target: "girls", img: "https://images.unsplash.com/photo-1515347619252-60a4bf4eff4c?w=400" }
-        ];
+function removeFromCart(productId) {
+  delete cart[productId];
+  updateCartUI();
+}
 
-        function renderProducts(products) {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = '';
-            
-            products.forEach(item => {
-                grid.innerHTML += `
-                    <div class="bg-cardBg rounded-2xl overflow-hidden border border-slate-800 shadow-md flex flex-col justify-between group hover:border-slate-700 transition-all duration-200">
-                        <div class="relative pt-[100%] bg-slate-800 overflow-hidden">
-                            <img src="${item.img}" alt="${item.name}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <span class="absolute top-3 left-3 bg-slate-900/80 text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-md border border-slate-700 text-accentNeon">${item.target} | ${item.type}</span>
-                        </div>
-                        <div class="p-4 space-y-3">
-                            <h3 class="font-bold tracking-tight text-slate-200 text-base leading-tight">${item.name}</h3>
-                            <div class="flex justify-between items-center pt-2">
-                                <span class="text-lg font-black text-slate-100">${item.price}</span>
-                                <button onclick="triggerCheckout(${item.id})" class="bg-accentNeon hover:bg-sky-500 text-slate-950 font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-lg transition-colors shadow-lg shadow-sky-500/10">Checkout</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+function getCartCount() {
+  return Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+}
 
-        function filterCategory(category) {
-            document.getElementById('section-title').innerText = `${category.charAt(0).toUpperCase() + category.slice(1)} Selection`;
-            const filtered = catalog.filter(item => item.target === category);
-            renderProducts(filtered);
-        }
+function getCartTotal() {
+  return Object.values(cart).reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+}
 
-        // Upper Navigation Event Listeners
-        window.addEventListener('hashchange', () => {
-            const hash = window.location.hash.replace('#', '');
-            if(hash === 'clothes' || hash === 'shoes') {
-                document.getElementById('section-title').innerText = `Trending ${hash.charAt(0).toUpperCase() + hash.slice(1)}`;
-                const filtered = catalog.filter(item => item.type === hash);
-                renderProducts(filtered);
-            }
-        });
+function updateCartUI() {
+  const count = getCartCount();
+  document.getElementById('cart-count').textContent = count;
 
-        // Mock hook to your custom Checkout API 
-        function triggerCheckout(id) {
-            const item = catalog.find(p => p.id === id);
-            alert(`Connecting to nexus-checkout-api to process order for: ${item.name}`);
-            // Future integration: fetch('http://127.0.0.1:8000/api/checkout', { method: 'POST', ... })
-        }
+  const itemsEl = document.getElementById('cart-items');
+  const emptyEl = document.getElementById('cart-empty');
+  const footerEl = document.getElementById('cart-footer');
 
-        // Initial Load
-        renderProducts(catalog);
-    </script>
+  const entries = Object.entries(cart);
+  if (entries.length === 0) {
+    itemsEl.innerHTML = '';
+    itemsEl.classList.add('hidden');
+    emptyEl.classList.remove('hidden');
+    footerEl.classList.add('hidden');
+    return;
+  }
+  itemsEl.classList.remove('hidden');
+  emptyEl.classList.add('hidden');
+  footerEl.classList.remove('hidden');
+
+  itemsEl.innerHTML = entries.map(([id, item]) => `
+    <div class="flex gap-3 items-center">
+      <img src="${getImage(item.product)}" class="w-16 h-16 rounded-lg object-cover bg-ink shrink-0">
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold truncate">${escapeHtml(item.product.product_name)}</p>
+        <p class="text-signal text-sm font-mono">${formatKsh(item.product.price)}</p>
+      </div>
+      <div class="flex items-center gap-2 bg-ink rounded-full px-1">
+        <button onclick="changeQuantity(${id}, -1)" class="w-7 h-7 flex items-center justify-center text-mute hover:text-paper">&minus;</button>
+        <span class="text-sm font-semibold w-5 text-center">${item.quantity}</span>
+        <button onclick="changeQuantity(${id}, 1)" class="w-7 h-7 flex items-center justify-center text-mute hover:text-paper">&plus;</button>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('cart-total').textContent = formatKsh(getCartTotal());
+}
+
+function bumpCartBadge() {
+  const badge = document.getElementById('cart-count');
+  badge.classList.add('cart-bump');
+  setTimeout(() => badge.classList.remove('cart-bump'), 200);
+}
+
+// ============================================================
+// CART DRAWER OPEN/CLOSE
+// ============================================================
+function openCart() {
+  document.getElementById('cart-overlay').classList.remove('hidden');
+  document.getElementById('cart-drawer').classList.remove('translate-x-full');
+}
+function closeCart() {
+  document.getElementById('cart-overlay').classList.add('hidden');
+  document.getElementById('cart-drawer').classList.add('translate-x-full');
+}
+
+// ============================================================
+// WHATSAPP CHECKOUT (client-side message build, matches backend format)
+// ============================================================
+function checkoutWhatsApp() {
+  const entries = Object.values(cart);
+  if (entries.length === 0) return;
+
+  let msg = "Hello! I want to order these clothes from your shop:\n\n";
+  entries.forEach(item => {
+    msg += `👕 ${item.quantity}x ${item.product.product_name} - ${formatKsh(item.product.price)}\n`;
+  });
+  msg += `\n💰 Total Order Value: ${formatKsh(getCartTotal())}`;
+
+  const encoded = encodeURIComponent(msg);
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
+  window.open(url, '_blank');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.add('hidden'), 1800);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadProducts();
+</script>
 </body>
 </html>
