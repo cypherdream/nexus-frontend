@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus Admin — Bulk Upload</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#11131A', panel: '#1B1E27', line: '#2B2F3B',
+          paper: '#F4F1EA', signal: '#FF5A1F', mute: '#8B8F9C',
+          good: '#3DD68C', bad: '#FF5A5A'
+        },
+        fontFamily: {
+          display: ['"Archivo Black"', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  textarea { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body class="bg-ink text-paper antialiased min-h-screen">
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+
+  <h1 class="font-display text-2xl mb-1">NEXUS<span class="text-signal">.</span> ADMIN</h1>
+  <p class="text-mute text-sm mb-8">Bulk add products to your store</p>
+
+  <div id="login-panel" class="bg-panel border border-line rounded-2xl p-5 mb-6">
+    <h2 class="font-display text-base mb-4">LOG IN</h2>
+    <div class="space-y-3">
+      <input id="login-email" type="email" placeholder="Vendor email"
+        class="w-full bg-ink border border-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-signal">
+      <input id="login-password" type="password" placeholder="Password"
+        class="w-full bg-ink border border-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-signal">
+      <button onclick="login()" id="login-btn"
+        class="w-full bg-signal hover:bg-orange-500 text-ink font-bold py-3 rounded-xl transition-colors">
+        Log in
+      </button>
+      <p id="login-status" class="text-xs text-center"></p>
+    </div>
+    <p class="text-mute text-xs mt-4">
+      Don't have a vendor account yet? Register once at
+      <a href="https://nexus-checkout-api.onrender.com/docs" target="_blank" class="text-signal underline">/docs → POST /vendor/</a>,
+      then come back here to log in.
+    </p>
+  </div>
+
+  <div id="upload-panel" class="hidden">
+
+    <div class="bg-panel border border-line rounded-2xl p-5 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-display text-base">PASTE PRODUCTS</h2>
+        <button onclick="logout()" class="text-mute text-xs hover:text-paper">Log out</button>
+      </div>
+      <p class="text-mute text-xs mb-3 leading-relaxed">
+        One product per line, fields separated by <span class="text-paper font-mono">|</span> in this exact order:<br>
+        <span class="font-mono text-signal">name | price | stock | category_id | short description</span>
+      </p>
+      <div class="bg-ink border border-line rounded-xl p-3 mb-3">
+        <p class="text-xs text-mute font-mono leading-relaxed">
+          Example:<br>
+          Floral Summer Dress | 3500 | 8 | 1 | Light cotton dress, girls<br>
+          Classic Tee | 1200 | 20 | 1 | Soft everyday cotton tee
+        </p>
+      </div>
+      <textarea id="bulk-input" rows="8" placeholder="Paste your product list here, one per line..."
+        class="w-full bg-ink border border-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-signal resize-none"></textarea>
+
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <input id="default-category" type="number" value="1" placeholder="Default category ID"
+          class="bg-ink border border-line rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-signal">
+        <input id="default-status" type="text" value="true" disabled
+          class="bg-ink border border-line rounded-xl px-3 py-2 text-sm text-mute">
+      </div>
+
+      <button onclick="bulkUpload()" id="upload-btn"
+        class="w-full bg-signal hover:bg-orange-500 text-ink font-bold py-3.5 rounded-xl transition-colors mt-4">
+        Upload all products
+      </button>
+    </div>
+
+    <div id="results-panel" class="hidden bg-panel border border-line rounded-2xl p-5">
+      <h2 class="font-display text-base mb-3">RESULTS</h2>
+      <div id="results-list" class="space-y-2 text-sm"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API_BASE = "https://nexus-checkout-api.onrender.com";
+let accessToken = null;
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const statusEl = document.getElementById('login-status');
+  const btn = document.getElementById('login-btn');
+
+  if (!email || !password) {
+    statusEl.textContent = "Enter both email and password.";
+    statusEl.className = "text-xs text-center text-bad";
+    return;
+  }
+
+  btn.textContent = "Logging in…";
+  btn.disabled = true;
+  statusEl.textContent = "";
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.detail || `Login failed (${res.status})`);
+    }
+
+    accessToken = data.access_token || data.token || data.accessToken;
+    if (!accessToken) throw new Error("No access token in response. Check response shape.");
+
+    statusEl.textContent = "Logged in.";
+    statusEl.className = "text-xs text-center text-good";
+    document.getElementById('login-panel').classList.add('hidden');
+    document.getElementById('upload-panel').classList.remove('hidden');
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = "text-xs text-center text-bad";
+  } finally {
+    btn.textContent = "Log in";
+    btn.disabled = false;
+  }
+}
+
+function logout() {
+  accessToken = null;
+  document.getElementById('login-panel').classList.remove('hidden');
+  document.getElementById('upload-panel').classList.add('hidden');
+  document.getElementById('results-panel').classList.add('hidden');
+}
+
+function parseLines(text, defaultCategory) {
+  return text
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+    .map(line => {
+      const parts =
